@@ -44,6 +44,7 @@ public class RGBSequences : MonoBehaviour {
    bool WaitForModCount;
    int SolveCount;
    bool Failsafe;
+   bool HasLoggedBoner;
 
    void Awake () {
       moduleId = moduleIdCounter++;
@@ -204,6 +205,12 @@ public class RGBSequences : MonoBehaviour {
       if (GetMissionID() != "mod_blvd_forever") {
          return;
       }
+
+      if (!HasLoggedBoner) {
+         Debug.Log("Boner");
+         HasLoggedBoner = true;
+      }
+
       if (Failsafe) {
          return;
       }
