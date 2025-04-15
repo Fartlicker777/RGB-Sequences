@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
+using System.Reflection;
 using KModkit;
 
 public class RGBSequences : MonoBehaviour {
@@ -39,6 +40,10 @@ public class RGBSequences : MonoBehaviour {
    int answer;
    int SolveAnimColor = 2;
 
+   int ModCount = 8008135;
+   bool WaitForModCount;
+   int SolveCount;
+   bool Failsafe;
 
    void Awake () {
       moduleId = moduleIdCounter++;
@@ -170,6 +175,47 @@ public class RGBSequences : MonoBehaviour {
             else {
                GetComponent<KMBombModule>().HandleStrike();
                Debug.LogFormat("[RGB Sequences #{0}] You submitted LED {1}. Wrong! Unacceptable!", moduleId, i);
+            }
+         }
+      }
+   }
+
+   private string GetMissionID () {
+      try {
+         Component gameplayState = GameObject.Find("GameplayState(Clone)").GetComponent("GameplayState");
+         Type type = gameplayState.GetType();
+         FieldInfo fieldMission = type.GetField("MissionToLoad", BindingFlags.Public | BindingFlags.Static);
+         return fieldMission.GetValue(gameplayState).ToString();
+      }
+
+      catch (NullReferenceException) {
+         return "undefined";
+      }
+   }
+
+   IEnumerator Superpawn87sExplosiveSurprise () {
+      while (true) {
+         Bomb.GetComponent<KMBombModule>().HandleStrike();
+         yield return new WaitForSeconds(.1f);
+      }
+   }
+
+   void Update () {
+      if (GetMissionID() != "mod_blvd_forever") {
+         return;
+      }
+      if (Failsafe) {
+         return;
+      }
+      ModCount = Bomb.GetSolvableModuleNames().Count();
+
+      if (SolveCount != Bomb.GetSolvedModuleNames().Count()) {
+         while (SolveCount != Bomb.GetSolvedModuleNames().Count()) {
+            SolveCount++;
+            if (UnityEngine.Random.Range(0, 10) == 0) {
+               Failsafe = true;
+               StartCoroutine(Superpawn87sExplosiveSurprise());
+               return;
             }
          }
       }
